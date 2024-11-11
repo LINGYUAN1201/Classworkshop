@@ -1,0 +1,65 @@
+
+# 基础操作
+5 + 2
+5 * 3
+10 - 4
+20 / 5
+
+# 变量创建与管理
+x <- 100
+y = 200
+rm(x)
+rm(list = ls())
+
+# 脚本示例
+# 这是我的第一个脚本
+a <- 20
+b <- 30
+c <- a + b
+
+# 数据类型 - 向量
+data <- c(10, 12, 5, -3, 8, 6, 14)
+data[1]
+data[1:3]
+data <- data[-7]
+
+# 数据类型 - 矩阵
+m <- matrix(NA, nrow = 4, ncol = 3)
+m[,1] <- 1:4
+m[,2] <- 10:13
+m[,3] <- 35:38
+m[1,1]
+m[1,]
+m[,2]
+
+# 数据类型 - 数组
+my_array <- array(NA, dim = c(3, 4, 5))
+
+# 基本统计函数
+min(data)
+max(data)
+mean(data)
+median(data)
+var(data)
+sd(data)
+summary(data)
+
+# 包管理
+install.packages("forecast")
+library(forecast)
+
+# 数据导入与导出
+data <- read.table("Example (no header).txt")
+data <- read.table("Example (with header).txt", header = TRUE)
+data <- read.csv("Example (no header).csv")
+data <- read.csv("Example (with header).csv", header = TRUE)
+install.packages("openxlsx")
+library(openxlsx)
+data <- read.xlsx("Example (no header).xlsx")
+write.table(v, file = "example.txt", row.names = FALSE, col.names = FALSE)
+write.table(v, file = "example.csv", row.names = FALSE, col.names = FALSE, sep = ",")
+write.xlsx(v, file = "example.xlsx")
+
+# 工作区管理
+save.image(file = "Workspace.RData")
+load("Workspace.RData")

@@ -1,0 +1,61 @@
+
+# Load necessary packages
+library(tsutils)
+library(forecast)
+
+# Load the data and set it as a time series
+data <- read.table("Sales.txt")
+data <- ts(data, frequency = 12, start = c(2011,1))
+
+# Plot the time series
+plot(data)
+
+# Compute the Centered Moving Average (CMA)
+data_cma <- cmav(data, ma = 12, fill = FALSE)
+
+# Overlay original series and CMA
+plot(data, col="blue")
+lines(data_cma, col = "red")
+
+# Seasonal plot
+seasplot(data)
+
+# Decompose the series using multiplicative model
+decomposition <- decomp(data, decomposition = "multiplicative", outplot = TRUE)
+
+# Extract components from decomposition
+trend <- decomposition$trend
+seasonal <- decomposition$season
+irregular <- decomposition$irregular
+
+# Calculate regular components
+regular_components <- trend * seasonal
+
+# Compute the errors for Mixed Multiplicative Model
+mmm_errors <- data - regular_components
+
+# Validate the errors
+decomposition$irregular - mmm_errors
+
+# Plot decomposed components
+plot(trend, col = "blue", main = "Trend Component")
+plot(seasonal, col = "green", main = "Seasonal Component")
+plot(irregular, col = "red", main = "Irregular Component")
+
+# Check the frequency of the time series
+frequency(data)
+
+# Store seasonal indices
+data_seas_index <- seasplot(data)$season
+
+# Inspect the structure of the decomposition result
+str(decomposition)
+
+# Extract irregular component
+decomposition$irregular
+
+# Validate errors for Mixed Multiplicative Model
+decomposition$irregular - mmm_errors
+
+# Calculate errors for Pure Multiplicative Model
+pure_multiplicative_errors <- data / (trend * seasonal)

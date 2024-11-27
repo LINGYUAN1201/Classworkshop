@@ -1,0 +1,93 @@
+
+# 加载必要的库
+library(forecast)
+library(smooth)
+library(tsutils)
+
+# 导入数据 (假设数据保存为 Workshop3.csv)
+Workshop3 <- read.csv("Workshop3.csv")
+
+# 查看数据结构
+str(Workshop3)
+
+# 检查数据内容
+View(Workshop3)
+
+# 选择第一列 "Medium Noise" 并将其转换为时间序列格式
+medium_noise <- ts(Workshop3[,1], frequency=12)
+
+# 可视化时间序列
+plot(medium_noise)
+
+# 使用 additive 和 multiplicative 分解
+decomp(medium_noise, decomposition="additive", outplot=TRUE)
+decomp(medium_noise, decomposition="multiplicative", outplot=TRUE)
+plot(decompose(medium_noise, type="a")) # 加性分解
+plot(decompose(medium_noise, type="m")) # 乘性分解
+
+# 确定总观测数和训练集长度
+medium_noise_length <- length(medium_noise)
+train_length <- 36  # 训练集长度
+h <- 12             # 测试集预测长度
+
+# 创建训练集和测试集
+train <- ts(medium_noise[1:train_length], frequency=12)
+test <- ts(medium_noise[(train_length+1):medium_noise_length], frequency=12)
+
+# 计算长度为 3 的简单移动平均 (SMA)
+SMA <- ma(train, order=3, centre=FALSE)
+
+# 去除 NA 值
+SMA_no_NAs <- SMA[!is.na(SMA)]
+
+# 生成预测值
+SMA3_forecast <- ts(rep(SMA_no_NAs[length(SMA_no_NAs)], h), frequency=12)
+
+# 计算误差
+SMA3_errors <- test - SMA3_forecast
+
+# 均值误差 (ME)
+SMA3_ME <- mean(SMA3_errors)
+
+# 均方误差 (MSE)
+SMA3_MSE <- mean(SMA3_errors ^ 2)
+
+# 平均绝对误差 (MAE)
+SMA3_MAE <- mean(abs(SMA3_errors))
+
+# 平均绝对百分比误差 (MAPE)
+SMA3_MAPE <- 100 * mean(abs(SMA3_errors) / test)
+
+# 使用 ets() 方法计算 SES
+ETS_ANN_opt <- ets(train, model="ANN")
+ETS_ANN_forecast <- forecast(ETS_ANN_opt, h=h)$mean
+
+# 可视化 SES 预测
+plot(forecast(ETS_ANN_opt, h=h))
+
+# 使用 es() 方法固定初始值
+es_ANN_initial_1 <- es(medium_noise, model="ANN", initial=medium_noise[1], h=h, holdout=TRUE)
+
+# 使用优化初始值
+es_ANN_opt <- es(medium_noise, model="ANN", h=h, holdout=TRUE)
+
+# 比较两种方法的预测精度
+es_ANN_initial_1$accuracy
+es_ANN_opt$accuracy
+
+# 使用 es() 方法模拟 Naïve 方法
+medium_noise_naive <- es(medium_noise, model="ANN", persistence=1, h=h, holdout=TRUE)
+
+# 比较 Naïve 方法与 SES 方法
+medium_noise_naive$accuracy
+es_ANN_opt$accuracy
+
+# 加载趋势数据并分割
+trend_data <- ts(Workshop3[,2], frequency=12) # 第二列数据作为示例
+trend_data_train <- ts(trend_data[1:36], frequency=12)
+trend_data_test <- trend_data[37:48]
+
+# Holt 方法
+ets_AAN <- ets(trend_data_train, model="AAN")
+forecast(ets_AAN, h=h)$mean
+plot(forecast(ets_AAN, h=h))
